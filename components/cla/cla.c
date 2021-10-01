@@ -2,6 +2,7 @@
 #include "cla/cla_contact_tx_task.h"
 
 #ifndef PLATFORM_STM32
+#include "cla/posix/cla_mltp.h"
 #include "cla/posix/cla_mtcp.h"
 #include "cla/posix/cla_smtcp.h"
 #include "cla/posix/cla_tcpclv3.h"
@@ -38,6 +39,7 @@ struct available_cla_list_entry {
 
 const struct available_cla_list_entry AVAILABLE_CLAS[] = {
 #ifndef PLATFORM_STM32
+	{ "mltp", &mltp_create },
 	{ "mtcp", &mtcp_create },
 	{ "smtcp", &smtcp_create },
 	{ "tcpclv3", &tcpclv3_create },

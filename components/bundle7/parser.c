@@ -90,9 +90,9 @@ CborError bundle_end(struct bundle7_parser *state, CborValue *it)
 {
 	struct bundle *bundle;
 
-	if (*it->ptr != 0xff)
+	if (*it->source.ptr != 0xff)
 		return CborErrorIllegalType;
-	it->ptr++;
+	it->source.ptr++;
 
 	// Transition into "Done" state
 	state->basedata->status = PARSER_STATUS_DONE;
@@ -250,7 +250,7 @@ CborError lifetime(struct bundle7_parser *state, CborValue *it)
 	cbor_value_get_uint64(it, &value);
 	state->bundle->lifetime_ms = value;
 
-	const uint8_t *last_ptr = it->ptr;
+	const uint8_t *last_ptr = it->source.ptr;
 	CborError err = cbor_value_advance_fixed(it);
 
 	if (bundle_is_fragmented(state->bundle))
@@ -262,7 +262,7 @@ CborError lifetime(struct bundle7_parser *state, CborValue *it)
 
 		// -1 Byte infinite array header
 		state->bundle->primary_block_length = state->bundle_size - 1 +
-			(it->ptr - last_ptr);
+			(it->source.ptr - last_ptr);
 	}
 
 	return err;
@@ -294,7 +294,7 @@ CborError total_adu_length(struct bundle7_parser *state, CborValue *it)
 	cbor_value_get_uint64(it, &length);
 	state->bundle->total_adu_length = length;
 
-	const uint8_t *last_ptr = it->ptr;
+	const uint8_t *last_ptr = it->source.ptr;
 	CborError err = cbor_value_advance_fixed(it);
 
 	if (state->bundle->crc_type != BUNDLE_CRC_TYPE_NONE)
@@ -304,7 +304,7 @@ CborError total_adu_length(struct bundle7_parser *state, CborValue *it)
 
 		// -1 Byte infinite array header
 		state->bundle->primary_block_length = state->bundle_size - 1 +
-			(it->ptr - last_ptr);
+			(it->source.ptr - last_ptr);
 	}
 
 	return err;
