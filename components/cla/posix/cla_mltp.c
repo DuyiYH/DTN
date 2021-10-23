@@ -40,6 +40,9 @@ static enum ud3tn_result mltp_launch(struct cla_config *const config)
 
 static const char *mltp_name_get(void)
 {
+    /* add for test */
+    ltp_send(10 ,20);
+    ltp_recv(20, 10);
 	return "mltp";
 }
 
@@ -93,7 +96,7 @@ struct cla_config *mltp_create(
 
 	if (option_count > 2) {
 		if (parse_tcp_active(options[2], &tcp_active) != UD3TN_OK) {
-			LOGF("smtcp: Could not parse TCP active flag: %s",
+			LOGF("mltp: Could not parse LTP active flag: %s",
 			     options[2]);
 			return NULL;
 		}

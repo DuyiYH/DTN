@@ -17,7 +17,7 @@ else
   CPPFLAGS += -march=native
 endif
 
-LDFLAGS += -lpthread
+LDFLAGS += -lpthread -L. -lltp
 LDFLAGS_EXECUTABLE += -pie
 LDFLAGS_LIB += -shared
 
