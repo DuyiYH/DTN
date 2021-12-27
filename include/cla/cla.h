@@ -26,7 +26,7 @@ struct cla_config {
 struct cla_link {
 	struct cla_config *config;
 
-	// Flag to determine whether the link is still usable
+	// Flag to determine whether the link is still usable 用于判断链接是否仍然可用的标志 
 	bool active;
 
 	// Semaphore for waiting until the RX task is finished
@@ -97,7 +97,7 @@ struct cla_vtable {
 	size_t (*cla_mbs_get)(struct cla_config *);
 
 
-	/* Returns the transmission queue for the given node EID and address */
+	/* Returns the transmission queue for the given node EID and address 返回给定节点 EID 和地址的传输队列 */
 	struct cla_tx_queue (*cla_get_tx_queue)(struct cla_config *,
 						const char *, const char *);
 	/* Initiates a scheduled contact for a given EID and CLA address */

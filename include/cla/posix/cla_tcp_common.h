@@ -27,7 +27,7 @@ struct cla_tcp_link {
 struct cla_tcp_config {
 	struct cla_config base;
 
-	/* The handle for the passive or active socket */
+	/* The handle for the passive or active socket  */
 	int socket;
 
 	/* Task handle for the listener - required to support concurrent CLAs */

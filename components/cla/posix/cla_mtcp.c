@@ -78,6 +78,8 @@ static void mtcp_link_management_task(void *p)
 	struct mtcp_contact_parameters *const param = p;
 
 	ASSERT(param->cla_sock_addr != NULL);
+
+	LOGF("DEBUG : cla_sock_addr = [%s], func -- mtcp_link_management_task", param->cla_sock_addr);
 	do {
 		if (param->connected) {
 			ASSERT(param->socket > 0);
@@ -128,6 +130,9 @@ static void launch_connection_management_task(
 	const int sock, const char *cla_addr)
 {
 	ASSERT(cla_addr);
+
+	LOGF("DEBUG : cla_addr = [%s], sock = [%d], func -- launch_connection_management_task", cla_addr, sock);
+
 	struct mtcp_contact_parameters *contact_params =
 		malloc(sizeof(struct mtcp_contact_parameters));
 
@@ -144,12 +149,14 @@ static void launch_connection_management_task(
 			cla_addr,
 			"mtcp"
 		);
+		LOGF("DEBUG1 : cla_sock_addr = [%s], func -- launch_connection_management_task", contact_params->cla_sock_addr);
 		contact_params->socket = -1;
 		contact_params->connected = false;
 		contact_params->in_contact = true;
 	} else {
 		ASSERT(sock != -1);
 		contact_params->cla_sock_addr = strdup(cla_addr);
+		LOGF("DEBUG2 : cla_sock_addr = [%s], func -- launch_connection_management_task", contact_params->cla_sock_addr);
 		contact_params->socket = sock;
 		contact_params->connected = true;
 		contact_params->in_contact = false;
@@ -169,6 +176,9 @@ static void launch_connection_management_task(
 		contact_params->cla_sock_addr,
 		contact_params
 	);
+
+	LOGF("DEBUG : cla_sock_addr = [%s]. func -- launch_connection_management_task", contact_params->cla_sock_addr);
+
 	if (!htab_entry) {
 		LOG("MTCP: Error creating htab entry!");
 		goto fail;
@@ -206,6 +216,9 @@ static void mtcp_listener_task(void *param)
 {
 	struct mtcp_config *const mtcp_config = param;
 	char *cla_addr;
+
+	LOGF("DEBUG : cla_tcp_config->socket = [%d]. func -- mltp_listener_task.", mtcp_config->base.socket);
+
 	int sock;
 
 	for (;;) {
@@ -214,6 +227,9 @@ static void mtcp_listener_task(void *param)
 			mtcp_config->base.socket,
 			&cla_addr
 		);
+		
+		LOGF("DEBUG : cla_addr is [%s], func -- mtcp_listener_task", cla_addr);
+
 		if (sock == -1)
 			break;
 
@@ -278,6 +294,7 @@ size_t mtcp_forward_to_specific_parser(struct cla_link *link,
 	size_t result = 0;
 
 	// Decode MTCP CBOR byte string header if not done already
+	//如果尚未完成，则解码 MTCP CBOR 字节字符串标头 
 	if (!(mtcp_link->mtcp_parser.flags & PARSER_FLAG_DATA_SUBPARSER))
 		return mtcp_parser_parse(&mtcp_link->mtcp_parser,
 					 buffer, length);
@@ -332,13 +349,16 @@ static struct mtcp_contact_parameters *get_contact_parameters(
 {
 	struct mtcp_config *const mtcp_config =
 		(struct mtcp_config *)config;
-	char *const cla_sock_addr = cla_get_connect_addr(cla_addr, "mtcp");
+	char *const cla_sock_addr = cla_get_connect_addr(cla_addr, "mtcp"); //IP地址类似于198.162.0.0
+
+	LOGF("DEBUG : cla_sock_addr = [%s], func -- get_contact_parameters", cla_sock_addr);
 
 	struct mtcp_contact_parameters *param = htab_get(
 		&mtcp_config->param_htab,
 		cla_sock_addr
 	);
 	free(cla_sock_addr);
+	LOGF("DEBUG : param = [%p], func -- get_contact_parameters", param);
 	return param;
 }
 
@@ -390,10 +410,10 @@ static enum ud3tn_result mtcp_start_scheduled_contact(
 		LOGF("MTCP: Associating open connection with \"%s\" to new contact",
 		     cla_addr);
 		param->in_contact = true;
+		// LOG("DEBUG : func -- mltp_start_scheduled_contact, 4");
 		hal_semaphore_release(mtcp_config->param_htab_sem);
 		return UD3TN_OK;
 	}
-
 	launch_connection_management_task(mtcp_config, -1, cla_addr);
 	hal_semaphore_release(mtcp_config->param_htab_sem);
 
@@ -456,9 +476,9 @@ void mtcp_end_packet(struct cla_link *link)
 void mtcp_send_packet_data(
 	struct cla_link *link, const void *data, const size_t length)
 {
-	struct cla_tcp_link *const tcp_link = (struct cla_tcp_link *)link;
+	struct cla_tcp_link *const tcp_link = (struct cla_tcp_link *)link;//父类转换成子类？
 
-	// A previous operation may have canceled the sending process.
+	// A previous operation may have canceled the sending process.之前的操作可能取消了发送过程。 
 	if (!link->active)
 		return;
 
@@ -514,6 +534,8 @@ static enum ud3tn_result mtcp_init(
 			   CLA_TCP_MULTI_BACKLOG) != UD3TN_OK)
 		return UD3TN_FAIL;
 
+
+
 	return UD3TN_OK;
 }
 
@@ -532,6 +554,8 @@ struct cla_config *mtcp_create(
 		LOG("mtcp: Memory allocation failed!");
 		return NULL;
 	}
+
+	LOGF("DEBUG : options[0] = [%s], options[1] = [%s]. func -- mltp_creat", options[0], options[1]);
 
 	if (mtcp_init(config, options[0], options[1],
 		      bundle_agent_interface) != UD3TN_OK) {

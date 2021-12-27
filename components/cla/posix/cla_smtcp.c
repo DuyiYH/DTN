@@ -33,7 +33,6 @@ static void smtcp_link_creation_task(void *param)
 
 	LOGF("smtcp: Using %s mode",
 	     smtcp_config->tcp_active ? "active" : "passive");
-
 	cla_tcp_single_link_creation_task(
 		smtcp_config,
 		sizeof(struct mtcp_link)
@@ -41,6 +40,7 @@ static void smtcp_link_creation_task(void *param)
 	ASSERT(0);
 }
 
+//smtcp登陆？
 static enum ud3tn_result smtcp_launch(struct cla_config *const config)
 {
 	struct cla_tcp_single_config *const smtcp_config =
@@ -76,9 +76,9 @@ const struct cla_vtable smtcp_vtable = {
 	.cla_start_scheduled_contact = cla_tcp_single_start_scheduled_contact,
 	.cla_end_scheduled_contact = cla_tcp_single_end_scheduled_contact,
 
-	.cla_begin_packet = mtcp_begin_packet,
-	.cla_end_packet = mtcp_end_packet,
-	.cla_send_packet_data = mtcp_send_packet_data,
+	.cla_begin_packet = mtcp_begin_packet,//将数据的开头进行符合cbor的初始化，并测试发送能力
+	.cla_end_packet = mtcp_end_packet,//done
+	.cla_send_packet_data = mtcp_send_packet_data,//
 
 	.cla_rx_task_reset_parsers = mtcp_reset_parsers,
 	.cla_rx_task_forward_to_specific_parser =

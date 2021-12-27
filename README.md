@@ -67,6 +67,7 @@ Default arguments and internal settings such as storage, routing, and connection
 - whether the bundle node can reach other nodes during this specific contact (list of EID, optional).
 
 Nodes themselves can be configured (added / removed) via the same syntax and interface.
+节点本身可以通过相同的语法和界面进行配置（添加/删除）。 
 
 This repository includes convenient python tools that can be used after [preparing the python environment](doc/python-venv.md) to [configure contacts](tools/aap/aap_config.py).
 

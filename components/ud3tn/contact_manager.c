@@ -171,6 +171,8 @@ static void hand_over_contact_bundles(struct contact_info c)
 		c.cla_addr
 	);
 
+	LOGF("DEBUG : Arrive function -- hand_over_contact_bundles, and cla_tx_queue's eid is [%s], cla_addr is [%s]", c.eid, c.cla_addr);
+
 	if (!tx_queue.tx_queue_handle) {
 		LOGF("ContactManager: Could not obtain queue for TX to \"%s\" via \"%s\"",
 		     c.eid, c.cla_addr);
@@ -221,6 +223,7 @@ static uint8_t check_for_contacts(struct contact_list *contact_list,
 			added_contacts[i].eid,
 			added_contacts[i].cla_addr
 		);
+		LOG("DEBUG : before core dumped");
 		hand_over_contact_bundles(added_contacts[i]);
 	}
 	for (i = 0; i < removed_count; i++) {

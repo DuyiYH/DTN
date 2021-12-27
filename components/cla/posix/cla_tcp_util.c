@@ -169,7 +169,7 @@ int create_tcp_socket(const char *const node, const char *const service,
 		sock = -1;
 		goto done;
 	}
-
+	//此处的addr_return是做什么？
 	if (addr_return) {
 		*addr_return = cla_tcp_sockaddr_to_cla_addr(
 			e->ai_addr,
@@ -189,6 +189,7 @@ done:
 	return sock;
 }
 
+//读取cla_addr里的IP:PORT并对其创建一个socket用于连接其抑或监听
 int cla_tcp_connect_to_cla_addr(const char *const cla_addr,
 				const char *const default_service)
 {
@@ -197,6 +198,7 @@ int cla_tcp_connect_to_cla_addr(const char *const cla_addr,
 	char *const addr = strdup(cla_addr);
 	char *node, *service;
 
+	LOGF("DEBUG : addr = [%s], func -- cla_tcp_connect_to_cla_addr", addr);
 	if (!addr)
 		return -1;
 	// Split CLA addr into node and service names

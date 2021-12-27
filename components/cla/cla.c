@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+//creat_func即代表下文的&msmtcp_creat函数
 struct available_cla_list_entry {
 	const char *name;
 	struct cla_config *(*create_func)(
@@ -52,11 +53,13 @@ const struct available_cla_list_entry AVAILABLE_CLAS[] = {
 
 static void cla_register(struct cla_config *config);
 
+//对单个cla类型进行初始化
 static enum ud3tn_result initialize_single(
 	char *cur_cla_config,
 	const struct bundle_agent_interface *bundle_agent_interface)
 {
 	// NOTE that currently we only support the format <name>:<option>,...
+	//C 库函数 char *strchr(const char *str, int c) 在参数 str 所指向的字符串中搜索第一次出现字符 c（一个无符号字符）的位置。
 	char *colon = strchr(cur_cla_config, ':');
 
 	ASSERT(cur_cla_config);
@@ -73,6 +76,7 @@ static enum ud3tn_result initialize_single(
 	char *next_delim = &colon[1];
 	const char *options_array[CLA_MAX_OPTION_COUNT];
 
+	//对cla_config的选项进行拆分，并放入options_array中
 	options_array[0] = &colon[1];
 	while (options_count < CLA_MAX_OPTION_COUNT &&
 			(next_delim = strchr(next_delim, ','))) {
@@ -85,8 +89,10 @@ static enum ud3tn_result initialize_single(
 	const char *cla_name = cur_cla_config;
 	const struct available_cla_list_entry *cla_entry = NULL;
 
+	//判断拆分出的cla名称是否在规定的名称中
 	for (size_t i = 0; i < ARRAY_LENGTH(AVAILABLE_CLAS); i++) {
 		if (strcmp(AVAILABLE_CLAS[i].name, cla_name) == 0) {
+			LOGF("Present cla is: %s", AVAILABLE_CLAS[i].name);
 			cla_entry = &AVAILABLE_CLAS[i];
 			break;
 		}
@@ -96,6 +102,7 @@ static enum ud3tn_result initialize_single(
 		return UD3TN_FAIL;
 	}
 
+	//将输入的cla参数进行一定的处理，形成所需的结构体cla_config
 	struct cla_config *data = cla_entry->create_func(
 		options_array,
 		options_count,
@@ -114,6 +121,7 @@ static enum ud3tn_result initialize_single(
 	return UD3TN_OK;
 }
 
+//一个节点可能同时具备tcp，mtcp等多个cla层，因此需要对多个cla类型配置进行初始化
 enum ud3tn_result cla_initialize_all(
 	const char *cla_config_str,
 	const struct bundle_agent_interface *bundle_agent_interface)
@@ -121,6 +129,7 @@ enum ud3tn_result cla_initialize_all(
 	if (!cla_config_str)
 		return UD3TN_FAIL;
 
+	//以';'为间隔对多个cla类型配置进行切割
 	char *const cla_config_str_dup = strdup(cla_config_str);
 	char *cur_cla_config = cla_config_str_dup;
 	char *comma = strchr(cur_cla_config, ';');
@@ -214,7 +223,7 @@ enum ud3tn_result cla_link_init(struct cla_link *link,
 		goto fail_tx_task;
 	}
 
-	// Notify the router task of the newly established connection...
+	// Notify the router task of the newly established connection...将新建立的连接通知给路由器任务.
 	struct router_signal rt_signal = {
 		.type = ROUTER_SIGNAL_NEW_LINK_ESTABLISHED,
 		.data = NULL,
@@ -244,7 +253,7 @@ fail_rx_sem:
 
 void cla_link_wait_cleanup(struct cla_link *link)
 {
-	// Wait for graceful termination of tasks
+	// Wait for graceful termination of tasks等待任务正常终止 
 	hal_semaphore_take_blocking(link->rx_task_sem);
 	hal_semaphore_take_blocking(link->tx_task_sem);
 
@@ -256,6 +265,7 @@ void cla_link_wait_cleanup(struct cla_link *link)
 	QueueIdentifier_t tx_queue_handle = link->tx_queue_handle;
 
 	// Invalidate queue and unblock anyone waiting to put sth. in the queue
+	//使队列失效
 	link->tx_queue_handle = NULL;
 	while (hal_semaphore_try_take(link->tx_queue_sem, 0) != UD3TN_OK)
 		hal_semaphore_release(link->tx_queue_sem);
@@ -270,12 +280,21 @@ void cla_link_wait_cleanup(struct cla_link *link)
 
 char *cla_get_connect_addr(const char *cla_addr, const char *cla_name)
 {
+	LOGF("DEBUG : cla_addr = [%s], func --  cla_get_connect_addr.", cla_addr);
+
 	const char *offset = strchr(cla_addr, ':');
+
+	LOGF("DEBUG : offset = [%s], func --  cla_get_connect_addr.", offset);
 
 	if (!offset)
 		return NULL;
 	ASSERT(offset - cla_addr == (ssize_t)strlen(cla_name));
 	ASSERT(memcmp(cla_addr, cla_name, offset - cla_addr) == 0);
+
+	char* res = strdup(offset + 1);
+
+	LOGF("DEBUG : res = [%s], func --  cla_get_connect_addr.", res);
+
 	return strdup(offset + 1);
 }
 

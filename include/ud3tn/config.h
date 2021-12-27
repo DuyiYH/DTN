@@ -115,6 +115,20 @@ enum failed_forwarding_policy {
 // Whether or not to close active TCP connections after a contact
 #define CLA_MTCP_CLOSE_AFTER_CONTACT 0
 
+// Length of the listen backlog for single-connection CLAs
+#define CLA_LTP_SINGLE_BACKLOG 1
+// Length of the listen backlog for multi-connection CLAs
+#define CLA_LTP_MULTI_BACKLOG 64
+// On contact start, outgoing connections are attempted. If the first attempt
+// fails, it is retried in the given interval up to the given maximum number
+// of attempts.
+#define CLA_LTP_RETRY_INTERVAL_MS 1000
+#define CLA_LTP_MAX_RETRY_ATTEMPTS 10
+// The number of slots in the LTP CLA hash tables (e.g. for TCPCLv3 and MTCP)
+#define CLA_LTP_PARAM_HTAB_SLOT_COUNT 32
+// Whether or not to close active LTP connections after a contact
+#define CLA_MLTP_CLOSE_AFTER_CONTACT 0
+
 
 
 /*

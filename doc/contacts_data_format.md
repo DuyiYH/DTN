@@ -19,9 +19,6 @@ There are three basic values for `COMMAND` that can be used to configure µD3TN 
   * `2` representing **REPLACE**: Delete the node if it exists already, then re-create it with the provided data.
   * `3` representing **DELETE**: Delete the given endpoints or contacts from the given node, or delete the node altogether if no endpoints or contacts are provided.
 
-`NODE_ID_STRING` is always mandatory. All strings shall be enclosed in parentheses, e.g., `(dtn://ud3tn2.dtn)` is a valid node ID string.
-
-The `RELIABILITY` value is optional and shall be an integer number between 100 and 1000 and represent the expected likelihood that a future contact with the given node will be observed, divided by 1000.0.
 
 `CLA_ADDRESS_STRING` is mandatory when creating a node and uses the same string representation as the node ID and consists of the convergence layer adapter and the node address, e.g., `(tcpclv3:127.0.0.1:1234)`.
 

@@ -65,7 +65,7 @@ enum ud3tn_result cla_tcp_link_init(
 	ASSERT(connected_socket >= 0);
 	link->connection_socket = connected_socket;
 
-	// This will fire up the RX and TX tasks
+	// This will fire up(启动)the RX and TX tasks
 	if (cla_link_init(&link->base, &config->base) != UD3TN_OK)
 		return UD3TN_FAIL;
 
@@ -77,6 +77,8 @@ enum ud3tn_result cla_tcp_read(struct cla_link *link,
 			       size_t *bytes_read)
 {
 	struct cla_tcp_link *tcp_link = (struct cla_tcp_link *)link;
+
+	LOG("DEBUG : Arrive func -- cla_tcp_read");
 
 	const ssize_t ret = recv(
 		tcp_link->connection_socket,
@@ -105,7 +107,9 @@ enum ud3tn_result cla_tcp_connect(struct cla_tcp_config *const config,
 {
 	if (node == NULL || service == NULL)
 		return UD3TN_FAIL;
-
+	
+	//此socket用作发送
+	//等价于ltp中的sessionID？
 	config->socket = create_tcp_socket(
 		node,
 		service,
@@ -126,6 +130,7 @@ enum ud3tn_result cla_tcp_connect(struct cla_tcp_config *const config,
 	return UD3TN_OK;
 }
 
+//undo
 enum ud3tn_result cla_tcp_listen(struct cla_tcp_config *config,
 				 const char *node, const char *service,
 				 int backlog)
@@ -133,6 +138,7 @@ enum ud3tn_result cla_tcp_listen(struct cla_tcp_config *config,
 	if (node == NULL || service == NULL)
 		return UD3TN_FAIL;
 
+	//此socket是用作监听
 	config->socket = create_tcp_socket(
 		node,
 		service,
@@ -161,6 +167,8 @@ enum ud3tn_result cla_tcp_listen(struct cla_tcp_config *config,
 	return UD3TN_OK;
 }
 
+//返回的是一个有效的文件描述符？
+//accept新的连接后，有一个fd，并通过一个哈希表对其进行判断，看是否有相应的cla地址，如果没有则报错，有则返回
 int cla_tcp_accept_from_socket(struct cla_tcp_config *config,
 			       const int listener_socket,
 			       char **const addr)
@@ -186,6 +194,8 @@ int cla_tcp_accept_from_socket(struct cla_tcp_config *config,
 			return -1;
 	}
 
+	//tcp地址--IP:PORT, IPv6则是[IP]:PORT，该地址通过sockaddr获得
+	//ltp中需要这个吗？需要一个返回值给addr？直接返回engineID？
 	char *const cla_addr = cla_tcp_sockaddr_to_cla_addr(
 		(struct sockaddr *)&sockaddr_tmp,
 		sockaddr_tmp_len
@@ -204,7 +214,7 @@ int cla_tcp_accept_from_socket(struct cla_tcp_config *config,
 	else
 		free(cla_addr);
 
-	/* Disable the nagle algorithm to prevent delays in responses */
+	/* Disable the nagle algorithm to prevent delays in responses 禁用 nagle 算法以防止响应延迟 */
 	if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY,
 		       &enable, sizeof(int)) < 0) {
 		LOGF("TCP: setsockopt(TCP_NODELAY) failed: %s",
@@ -260,6 +270,8 @@ static void handle_established_connection(
 	free(link);
 }
 
+//此处的single代表什么？ 绑定的是本地的IP:PORT还是对端的？（应该是都有？）、
+//此处是主动连接，去绑定对端的IP:PORT
 void cla_tcp_single_connect_task(struct cla_tcp_single_config *config,
 				 const size_t struct_size)
 {
@@ -294,6 +306,7 @@ void cla_tcp_single_listen_task(struct cla_tcp_single_config *config,
 	int sock;
 
 	for (;;) {
+		//此处的sock其实用fd更为准确
 		sock = cla_tcp_accept_from_socket(
 			&config->base,
 			config->base.socket,
